@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BugHunter AI</title>
+  <link rel="icon" href="img/embleme.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ===== accueil ===== -->
+<section id="vue-accueil">
+  <img src="img/logo.png" alt="BugHunter">
+  <div class="orne">— ⚜ —</div>
+  <p class="slogan italique">Traquez les bugs. Rétablissez la vérité.</p>
+  <button class="bouton" onclick="montrer('connexion')">Enquêter ▸</button>
+</section>
+
+<!-- ===== connexion ===== -->
+<section id="vue-connexion" class="cache">
+  <img src="img/logo.png" alt="BugHunter">
+  <div class="cadre">
+    <h2>Accès au bureau</h2>
+    <div class="orne">— ⚜ —</div>
+    <p class="italique">Connectez-vous pour reprendre l'enquête.</p>
+
+    <form onsubmit="connecter(); return false">
+      <div class="champ">
+        <label for="login-nom">Identifiant</label>
+        <input id="login-nom" autocomplete="username" placeholder="Votre identifiant">
+      </div>
+      <div class="champ">
+        <label for="login-mdp">Mot de passe</label>
+        <input id="login-mdp" type="password" autocomplete="current-password" placeholder="Votre mot de passe">
+      </div>
+
+      <div id="message-login"></div>
+
+      <button class="bouton" type="submit" id="bouton-login">Se connecter ▸</button>
+    </form>
+
+    <p class="bascule">Pas encore de profil ?
+      <button class="lien" onclick="montrer('inscription')">Créer un profil</button></p>
+  </div>
+  <p style="text-align:left; margin-top:14px"><button class="lien" onclick="montrer('accueil')">‹ Retour</button></p>
+</section>
+
+<!-- ===== inscription ===== -->
+<section id="vue-inscription" class="cache">
+  <img src="img/logo.png" alt="BugHunter">
+  <div class="cadre">
+    <h2>Nouveau détective</h2>
+    <div class="orne">— ⚜ —</div>
+    <p class="italique">Créez votre profil pour ouvrir votre premier dossier.</p>
+
+    <form onsubmit="inscrire(); return false">
+      <div class="champ">
+        <label for="inscription-nom">Identifiant</label>
+        <input id="inscription-nom" autocomplete="username" placeholder="3 caractères minimum">
+      </div>
+      <div class="champ">
+        <label for="inscription-mdp">Mot de passe</label>
+        <input id="inscription-mdp" type="password" autocomplete="new-password" placeholder="8 caractères minimum">
+      </div>
+      <div class="champ">
+        <label for="inscription-mdp2">Confirmer le mot de passe</label>
+        <input id="inscription-mdp2" type="password" autocomplete="new-password" placeholder="Le même mot de passe">
+      </div>
+
+      <div id="message-inscription"></div>
+
+      <button class="bouton" type="submit" id="bouton-inscription">Créer le profil ▸</button>
+    </form>
+
+    <p class="bascule">Déjà un profil ?
+      <button class="lien" onclick="montrer('connexion')">Se connecter</button></p>
+  </div>
+  <p style="text-align:left; margin-top:14px"><button class="lien" onclick="montrer('accueil')">‹ Retour</button></p>
+</section>
+
+<!-- ===== le bandeau (bureau, dossier, profil) ===== -->
+<header id="bandeau" class="cache">
+  <img src="img/logo.png" alt="BugHunter" onclick="montrer('bureau')">
+  <nav>
+    <button id="nav-bureau" class="actif" onclick="montrer('bureau')">Bureau</button>
+    <button id="nav-profil" onclick="montrer('profil')">Profil</button>
+    <button onclick="deconnecter()">Déconnexion</button>
+  </nav>
+  <div class="agent-boite">
+    <b id="agent-nom">Détective</b>
+    <span id="agent-score">0 pts</span>
+  </div>
+</header>
+
+<main id="contenu" class="cache">
+
+  <div id="message"></div>
+
+  <!-- ===== bureau ===== -->
+  <section id="vue-bureau">
+    <div class="titre-page">
+      <h2>Bureau des enquêtes</h2>
+      <div class="orne">— ⚜ —</div>
+      <p class="italique">Choisissez une affaire et reprenez votre enquête.</p>
+    </div>
+
+    <div id="affaire-jour" class="cadre affaire-jour cache">
+      <div>
+        <div class="libelle">Affaire du jour · <span id="jour-date"></span></div>
+        <h3 id="jour-titre"></h3>
+        <p class="italique" id="jour-details"></p>
+      </div>
+      <button class="bouton petit" onclick="ouvrirAffaireDuJour()">Ouvrir le dossier ▸</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat cadre"><div class="rond">📋</div><div><div class="libelle">Enquêtes résolues</div><div class="valeur" id="stat-resolues">0</div></div></div>
+      <div class="stat cadre"><div class="rond">★</div><div><div class="libelle">Score total</div><div class="valeur" id="stat-score">0</div></div></div>
+      <div class="stat cadre"><div class="rond">🔍</div><div><div class="libelle">Affaires en cours</div><div class="valeur" id="stat-encours">0</div></div></div>
+    </div>
+
+    <div class="filtres">
+      <div class="filtre-groupe">
+        <div class="libelle">Filtrer par langage</div>
+        <button class="actif" onclick="filtrerLangage('', this)">Tous</button>
+        <button onclick="filtrerLangage('go', this)">Go</button>
+        <button onclick="filtrerLangage('javascript', this)">JavaScript</button>
+        <button onclick="filtrerLangage('sql', this)">SQL</button>
+      </div>
+      <div class="filtre-groupe">
+        <div class="libelle">Filtrer par difficulté</div>
+        <button class="actif" onclick="filtrerDifficulte('', this)">Toutes</button>
+        <button onclick="filtrerDifficulte('discovery', this)">Découverte</button>
+        <button onclick="filtrerDifficulte('investigation', this)">Investigation</button>
+        <button onclick="filtrerDifficulte('expert', this)">Expert</button>
+      </div>
+    </div>
+
+    <div class="bureau" id="bureau"></div>
+    <p class="pied">— Chaque bug a une histoire. À vous de la découvrir. —</p>
+  </section>
+
+  <!-- ===== dossier ===== -->
+  <section id="vue-dossier" class="cache">
+    <button class="lien" onclick="montrer('bureau')">‹ Retour au bureau</button>
+    <div class="cadre">
+      <div class="dossier-entete">
+        <div>
+          <span class="italique" id="dossier-ref"></span>
+          <h2 id="dossier-titre"></h2>
+        </div>
+        <span class="tampon" id="dossier-tampon">EN COURS</span>
+      </div>
+
+      <div class="colonnes">
+        <div>
+          <div class="rubrique">Rapport d'incident</div>
+          <div class="incident">
+            <p><strong>Attendu :</strong> <span id="incident-attendu"></span></p>
+            <p><strong>Observé :</strong> <span id="incident-observe"></span></p>
+          </div>
+
+          <div class="rubrique">Scène du bug</div>
+          <pre id="code"></pre>
+
+          <div class="rubrique">Pièces à conviction</div>
+          <div id="pieces"></div>
+        </div>
+
+        <div>
+          <div class="rubrique">Suspects</div>
+          <div id="suspects"></div>
+
+          <div class="rubrique">Indices</div>
+          <p class="italique" style="font-size:14px">Chaque indice oriente la réflexion mais coûte des points.</p>
+          <button class="bouton petit" id="bouton-indice" onclick="demanderIndice()">Demander un indice</button>
+          <div class="indices-liste" id="indices"></div>
+
+          <div id="corrections-zone" class="cache">
+            <div class="rubrique">Choisir la correction</div>
+            <div id="corrections"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="rapport" class="rapport-final cache">
+        <div class="rubrique">Rapport final</div>
+        <p><strong>Score :</strong> <span id="rapport-score"></span></p>
+        <p><strong>Cause :</strong> <span id="rapport-cause"></span></p>
+        <p><strong>Correction :</strong> <span id="rapport-correction"></span></p>
+        <p><strong>À retenir :</strong> <span id="rapport-lecon"></span></p>
+        <p id="rapport-commentaire-ligne" class="cache"><strong>L'assistant-détective :</strong>
+          <span id="rapport-commentaire" class="italique"></span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== profil ===== -->
+  <section id="vue-profil" class="cache">
+    <div class="titre-page">
+      <h2>Dossier du détective</h2>
+      <div class="orne">— ⚜ —</div>
+    </div>
+    <div class="cadre">
+      <p><strong>Agent :</strong> <span id="profil-nom"></span></p>
+      <p><strong>Score total :</strong> <span id="profil-score"></span></p>
+      <p><strong>Affaires classées :</strong> <span id="profil-resolues"></span></p>
+      <p><strong>Meilleur score :</strong> <span id="profil-meilleur"></span></p>
+
+      <div class="rubrique">Concepts travaillés</div>
+      <div id="profil-concepts"></div>
+
+      <div class="rubrique">Historique</div>
+      <div class="table-defile">
+        <table class="historique">
+          <thead><tr><th>Affaire</th><th>Langage</th><th>Concept</th><th>Statut</th><th>Score</th><th>Date</th></tr></thead>
+          <tbody id="profil-historique"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,332 @@
+[
+  {
+    "slug": "go-boucle-sans-fin",
+    "title": "La boucle sans fin",
+    "language": "go",
+    "difficulty": "discovery",
+    "concept": "loop-condition",
+    "incident": {
+      "expected": "Le programme affiche la somme 6 puis se termine.",
+      "observed": "Le programme ne repond plus et n'affiche jamais rien."
+    },
+    "code": "func somme(n int) int {\n    total := 0\n    i := n\n    for i > 0 {\n        total = total + i\n    }\n    return total\n}\n\nfunc main() {\n    fmt.Println(somme(3))\n}",
+    "evidence": [
+      "Le programme doit etre arrete avec Ctrl+C.",
+      "Un fmt.Println(i) place dans la boucle affiche 3 en continu, sans jamais changer.",
+      "Avec n = 0, le programme se termine normalement et affiche 0."
+    ],
+    "suspects": [
+      {
+        "id": "A",
+        "label": "La condition i > 0 est mal ecrite, il faudrait i >= 0"
+      },
+      {
+        "id": "B",
+        "label": "La variable i n'est jamais modifiee dans la boucle, donc la condition reste vraie pour toujours"
+      },
+      {
+        "id": "C",
+        "label": "total = total + i efface la valeur precedente de total"
+      }
+    ],
+    "correct_suspect_id": "B",
+    "hints": [
+      "Regarde la preuve 2 : la valeur de i ne bouge pas d'un tour a l'autre.",
+      "Une boucle for s'arrete quand sa condition devient fausse. Qu'est-ce qui pourrait rendre i > 0 faux ici ?",
+      "Compare le corps de la boucle avec ce qu'il faudrait pour faire descendre i vers 0."
+    ],
+    "fixes": [
+      {
+        "id": "F1",
+        "label": "Ajouter i = i - 1 dans la boucle",
+        "correct": true
+      },
+      {
+        "id": "F2",
+        "label": "Remplacer la condition par i >= 0",
+        "correct": false
+      },
+      {
+        "id": "F3",
+        "label": "Deplacer total := 0 dans la boucle",
+        "correct": false
+      }
+    ],
+    "lesson": "Une boucle for doit faire evoluer sa condition. Si aucune variable de la condition ne change dans le corps de la boucle, elle ne s'arrete jamais."
+  },
+  {
+    "slug": "go-indice-disparu",
+    "title": "L'indice disparu",
+    "language": "go",
+    "difficulty": "discovery",
+    "concept": "slice-index",
+    "incident": {
+      "expected": "Le programme affiche les trois notes : 12, 15 et 9.",
+      "observed": "Le programme affiche les trois notes puis plante avec un message panic."
+    },
+    "code": "func main() {\n    notes := []int{12, 15, 9}\n    total := 0\n\n    for i := 0; i <= len(notes); i++ {\n        fmt.Println(\"note :\", notes[i])\n        total = total + notes[i]\n    }\n\n    fmt.Println(\"total :\", total)\n}",
+    "evidence": [
+      "Message d'erreur : panic: runtime error: index out of range [3] with length 3.",
+      "len(notes) retourne 3.",
+      "notes[0], notes[1] et notes[2] s'affichent correctement avant le plantage."
+    ],
+    "suspects": [
+      {
+        "id": "A",
+        "label": "La condition i <= len(notes) fait un tour de trop : le dernier indice valide est len(notes)-1"
+      },
+      {
+        "id": "B",
+        "label": "Le premier indice d'un slice est 1, la boucle devrait commencer a i := 1"
+      },
+      {
+        "id": "C",
+        "label": "len ne compte pas correctement les elements d'un slice de nombres"
+      }
+    ],
+    "correct_suspect_id": "A",
+    "hints": [
+      "Le message d'erreur donne deux nombres : l'indice demande [3] et la longueur 3. Compare-les.",
+      "Dans un slice de 3 elements, les indices vont de 0 a 2. Quel est le dernier i teste par la boucle ?",
+      "Regarde le signe de comparaison dans la condition du for."
+    ],
+    "fixes": [
+      {
+        "id": "F1",
+        "label": "Remplacer i <= len(notes) par i < len(notes)",
+        "correct": true
+      },
+      {
+        "id": "F2",
+        "label": "Commencer la boucle a i := 1",
+        "correct": false
+      },
+      {
+        "id": "F3",
+        "label": "Ecrire notes[i-1] dans le Println",
+        "correct": false
+      }
+    ],
+    "lesson": "Les indices d'un slice vont de 0 a len-1. La condition classique pour parcourir un slice est i < len(s), jamais i <= len(s)."
+  },
+  {
+    "slug": "js-bouton-silencieux",
+    "title": "Le bouton silencieux",
+    "language": "javascript",
+    "difficulty": "discovery",
+    "concept": "dom-loading-order",
+    "incident": {
+      "expected": "Un clic sur le bouton Valider affiche le message Merci !",
+      "observed": "Rien ne se passe au clic, et une erreur apparait dans la console au chargement."
+    },
+    "code": "<head>\n  <script>\n    const bouton = document.getElementById('valider');\n    bouton.addEventListener('click', function () {\n      document.getElementById('message').textContent = 'Merci !';\n    });\n  </script>\n</head>\n<body>\n  <button id=\"valider\">Valider</button>\n  <p id=\"message\"></p>\n</body>",
+    "evidence": [
+      "Console : TypeError: Cannot read properties of null (reading 'addEventListener').",
+      "Dans la console, apres le chargement de la page, document.getElementById('valider') retourne bien le bouton.",
+      "Le meme code colle dans la console apres le chargement fonctionne parfaitement."
+    ],
+    "suspects": [
+      {
+        "id": "A",
+        "label": "Le script est dans <head> et s'execute avant que le bouton existe : getElementById retourne null"
+      },
+      {
+        "id": "B",
+        "label": "addEventListener ne fonctionne pas sur les boutons, il faut utiliser onclick"
+      },
+      {
+        "id": "C",
+        "label": "textContent est en lecture seule, on ne peut pas le modifier"
+      }
+    ],
+    "correct_suspect_id": "A",
+    "hints": [
+      "L'erreur parle de null. Quelle ligne du script a pu produire null, et pourquoi ?",
+      "Un navigateur lit la page de haut en bas. Ou en est le <body> quand le script du <head> s'execute ?",
+      "Compare la preuve 3 avec la position du <script> dans la page."
+    ],
+    "fixes": [
+      {
+        "id": "F1",
+        "label": "Deplacer le <script> juste avant </body>",
+        "correct": true
+      },
+      {
+        "id": "F2",
+        "label": "Remplacer addEventListener par onclick",
+        "correct": false
+      },
+      {
+        "id": "F3",
+        "label": "Remplacer textContent par innerHTML",
+        "correct": false
+      }
+    ],
+    "lesson": "Un script s'execute a l'endroit ou il se trouve dans la page. S'il cherche un element ecrit plus bas, il ne le trouve pas encore. Solution simple : placer le script en fin de body (ou utiliser l'attribut defer)."
+  },
+  {
+    "slug": "js-total-mysterieux",
+    "title": "Le total mystérieux",
+    "language": "javascript",
+    "difficulty": "discovery",
+    "concept": "string-number-conversion",
+    "incident": {
+      "expected": "Le total affiche 12.",
+      "observed": "Le total affiche 75."
+    },
+    "code": "const a = document.getElementById('prix1').value;\nconst b = document.getElementById('prix2').value;\n\nconst total = a + b;\nconst remise = a - b;\n\ndocument.getElementById('total').textContent = total;\ndocument.getElementById('remise').textContent = remise;\nconsole.log('total :', total);",
+    "evidence": [
+      "typeof a retourne string.",
+      "Aucune erreur n'apparait dans la console.",
+      "a - b retourne 2, alors que a + b retourne 75."
+    ],
+    "suspects": [
+      {
+        "id": "A",
+        "label": "L'operateur + concatene deux chaines au lieu d'additionner deux nombres"
+      },
+      {
+        "id": "B",
+        "label": "console.log modifie les valeurs avant de les afficher"
+      },
+      {
+        "id": "C",
+        "label": "La variable b est inaccessible au moment du calcul"
+      }
+    ],
+    "correct_suspect_id": "A",
+    "hints": [
+      "Observe le type de chaque valeur.",
+      "Le comportement de + depend des types.",
+      "Convertis les valeurs avant l'addition."
+    ],
+    "fixes": [
+      {
+        "id": "F1",
+        "label": "Number(a) + Number(b)",
+        "correct": true
+      },
+      {
+        "id": "F2",
+        "label": "a.toString() + b",
+        "correct": false
+      },
+      {
+        "id": "F3",
+        "label": "Inverser l'ordre : b + a",
+        "correct": false
+      }
+    ],
+    "lesson": "Les valeurs d'un formulaire sont toujours des chaines. Avec deux chaines, + fait une concatenation ('7' + '5' donne '75'). Il faut convertir avec Number() avant de calculer."
+  },
+  {
+    "slug": "sql-dossiers-fantomes",
+    "title": "Les dossiers fantômes",
+    "language": "sql",
+    "difficulty": "discovery",
+    "concept": "null-comparison",
+    "incident": {
+      "expected": "La requete liste les dossiers qui n'ont pas encore d'agent assigne.",
+      "observed": "La requete retourne zero ligne, alors que l'application en montre plusieurs."
+    },
+    "code": "-- liste des dossiers sans agent assigne,\n-- pour l'ecran du bureau des enquetes\nSELECT id,\n       titre,\n       cree_le\nFROM dossiers\nWHERE agent_id = NULL\nORDER BY cree_le;",
+    "evidence": [
+      "SELECT COUNT(*) FROM dossiers WHERE agent_id IS NULL retourne 5.",
+      "SELECT NULL = NULL ne retourne pas vrai.",
+      "La table contient bien 20 dossiers au total."
+    ],
+    "suspects": [
+      {
+        "id": "A",
+        "label": "La table dossiers est vide, il n'y a rien a afficher"
+      },
+      {
+        "id": "B",
+        "label": "En SQL, une comparaison avec = NULL n'est jamais vraie : il faut ecrire IS NULL"
+      },
+      {
+        "id": "C",
+        "label": "Il manque la colonne agent_id dans le SELECT"
+      }
+    ],
+    "correct_suspect_id": "B",
+    "hints": [
+      "La preuve 1 montre que les lignes existent : une autre ecriture de la meme condition les trouve.",
+      "En SQL, NULL veut dire valeur inconnue. Que vaut une comparaison avec une valeur inconnue ?",
+      "Compare l'operateur de ta requete avec celui de la preuve 1."
+    ],
+    "fixes": [
+      {
+        "id": "F1",
+        "label": "Ecrire WHERE agent_id IS NULL",
+        "correct": true
+      },
+      {
+        "id": "F2",
+        "label": "Ecrire WHERE agent_id = 'NULL'",
+        "correct": false
+      },
+      {
+        "id": "F3",
+        "label": "Ajouter agent_id dans le SELECT",
+        "correct": false
+      }
+    ],
+    "lesson": "NULL n'est egal a rien, pas meme a NULL. Pour tester l'absence de valeur, SQL a des operateurs dedies : IS NULL et IS NOT NULL."
+  },
+  {
+    "slug": "sql-compteur-impossible",
+    "title": "Le compteur impossible",
+    "language": "sql",
+    "difficulty": "investigation",
+    "concept": "group-by-aggregate",
+    "incident": {
+      "expected": "La requete affiche le nombre de dossiers de chaque agent.",
+      "observed": "La requete affiche une seule ligne : un seul agent avec 20 dossiers, le total de toute la table."
+    },
+    "code": "-- nombre de dossiers traites par chaque agent,\n-- pour la page de progression\n\nSELECT agent,\n       COUNT(*) AS nb_dossiers\nFROM dossiers\nORDER BY nb_dossiers DESC\nLIMIT 10;",
+    "evidence": [
+      "SELECT COUNT(*) FROM dossiers retourne 20.",
+      "SELECT DISTINCT agent FROM dossiers retourne 4 agents differents.",
+      "La meme requete avec GROUP BY agent retourne bien 4 lignes."
+    ],
+    "suspects": [
+      {
+        "id": "A",
+        "label": "COUNT(*) compte aussi les lignes des autres agents parce qu'il manque le regroupement GROUP BY agent"
+      },
+      {
+        "id": "B",
+        "label": "Il faudrait COUNT(agent) au lieu de COUNT(*)"
+      },
+      {
+        "id": "C",
+        "label": "Il manque un ORDER BY, donc les agents sont melanges dans une seule ligne"
+      }
+    ],
+    "correct_suspect_id": "A",
+    "hints": [
+      "Compare le 20 du resultat avec la preuve 1. Que compte vraiment la requete ?",
+      "Un agregat comme COUNT travaille par groupe de lignes. Sans regroupement, toute la table forme un seul groupe.",
+      "Regarde la preuve 3 : quel mot-cle manque a la requete d'origine ?"
+    ],
+    "fixes": [
+      {
+        "id": "F1",
+        "label": "Ajouter GROUP BY agent a la fin de la requete",
+        "correct": true
+      },
+      {
+        "id": "F2",
+        "label": "Remplacer COUNT(*) par COUNT(agent)",
+        "correct": false
+      },
+      {
+        "id": "F3",
+        "label": "Ajouter ORDER BY agent",
+        "correct": false
+      }
+    ],
+    "lesson": "Sans GROUP BY, un agregat comme COUNT ou SUM s'applique a toute la table, qui forme un seul groupe. Pour un resultat par agent, il faut regrouper avec GROUP BY agent."
+  }
+]

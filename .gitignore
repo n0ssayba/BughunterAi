@@ -1,0 +1,15 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# base de données
+*.db
+
+# binaires
+*.exe
+*.exe~
+bughunter-ai
+
+# journaux du serveur
+*.log
