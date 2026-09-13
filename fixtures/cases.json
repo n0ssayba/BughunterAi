@@ -1,0 +1,344 @@
+[
+  {
+    "slug": "go-boucle-sans-fin",
+    "title": "La boucle sans fin",
+    "language": "go",
+    "difficulty": "investigation",
+    "concept": "loop-condition",
+    "incident": {
+      "expected": "Le programme affiche la somme 6 puis se termine.",
+      "observed": "Le programme ne repond plus et n'affiche jamais rien."
+    },
+    "code": "func somme(n int) int {\n    total := 0\n    i := n\n    for i > 0 {\n        total = total + i\n    }\n    return total\n}\n\nfunc main() {\n    fmt.Println(somme(3))\n}",
+    "evidence": [
+      "Le programme doit etre arrete avec Ctrl+C.",
+      "Un fmt.Println(i) place dans la boucle affiche 3 en continu, sans jamais changer.",
+      "Avec n = 0, le programme se termine normalement et affiche 0."
+    ],
+    "suspects": [
+      {
+        "id": "A",
+        "label": "La condition i > 0 est mal ecrite, il faudrait i >= 0"
+      },
+      {
+        "id": "B",
+        "label": "La variable i n'est jamais modifiee dans la boucle, donc la condition reste vraie pour toujours"
+      },
+      {
+        "id": "C",
+        "label": "total = total + i efface la valeur precedente de total"
+      }
+    ],
+    "correct_suspect_id": "B",
+    "hints": [
+      "Regarde la preuve 2 : la valeur de i ne bouge pas d'un tour a l'autre.",
+      "Une boucle for s'arrete quand sa condition devient fausse. Qu'est-ce qui pourrait rendre i > 0 faux ici ?",
+      "Compare le corps de la boucle avec ce qu'il faudrait pour faire descendre i vers 0."
+    ],
+    "fixes": [
+      {
+        "id": "F1",
+        "label": "Ajouter i = i - 1 dans la boucle",
+        "correct": true
+      },
+      {
+        "id": "F2",
+        "label": "Remplacer la condition par i >= 0",
+        "correct": false
+      },
+      {
+        "id": "F3",
+        "label": "Deplacer total := 0 dans la boucle",
+        "correct": false
+      }
+    ],
+    "lesson": "Une boucle for doit faire evoluer sa condition. Si aucune variable de la condition ne change dans le corps de la boucle, elle ne s'arrete jamais."
+  },
+  {
+    "slug": "go-indice-disparu",
+    "title": "L'indice disparu",
+    "language": "go",
+    "difficulty": "discovery",
+    "concept": "slice-index",
+    "incident": {
+      "expected": "Le programme affiche les trois notes : 12, 15 et 9.",
+      "observed": "Le programme affiche les trois notes puis plante avec un message panic."
+    },
+    "code": "func main() {\n    notes := []int{12, 15, 9}\n    total := 0\n\n    for i := 0; i <= len(notes); i++ {\n        fmt.Println(\"note :\", notes[i])\n        total = total + notes[i]\n    }\n\n    fmt.Println(\"total :\", total)\n}",
+    "evidence": [
+      "Message d'erreur : panic: runtime error: index out of range [3] with length 3.",
+      "len(notes) retourne 3.",
+      "notes[0], notes[1] et notes[2] s'affichent correctement avant le plantage."
+    ],
+    "suspects": [
+      {
+        "id": "A",
+        "label": "La condition i <= len(notes) fait un tour de trop : le dernier indice valide est len(notes)-1"
+      },
+      {
+        "id": "B",
+        "label": "Le premier indice d'un slice est 1, la boucle devrait commencer a i := 1"
+      },
+      {
+        "id": "C",
+        "label": "len ne compte pas correctement les elements d'un slice de nombres"
+      }
+    ],
+    "correct_suspect_id": "A",
+    "hints": [
+      "Le message d'erreur donne deux nombres : l'indice demande [3] et la longueur 3. Compare-les.",
+      "Dans un slice de 3 elements, les indices vont de 0 a 2. Quel est le dernier i teste par la boucle ?",
+      "Regarde le signe de comparaison dans la condition du for."
+    ],
+    "fixes": [
+      {
+        "id": "F1",
+        "label": "Remplacer i <= len(notes) par i < len(notes)",
+        "correct": true
+      },
+      {
+        "id": "F2",
+        "label": "Commencer la boucle a i := 1",
+        "correct": false
+      },
+      {
+        "id": "F3",
+        "label": "Ecrire notes[i-1] dans le Println",
+        "correct": false
+      }
+    ],
+    "lesson": "Les indices d'un slice vont de 0 a len-1. La condition classique pour parcourir un slice est i < len(s), jamais i <= len(s)."
+  },
+  {
+    "slug": "js-bouton-silencieux",
+    "title": "Le bouton silencieux",
+    "language": "javascript",
+    "difficulty": "expert",
+    "concept": "dom-loading-order",
+    "incident": {
+      "expected": "Un clic sur Valider affiche « Merci, Nossayba ! Envoi n° 1 », puis n° 2 au clic suivant.",
+      "observed": "Le clic ne fait rien du tout. Une erreur apparait dans la console, mais uniquement au chargement de la page, jamais au clic."
+    },
+    "code": "<head>\n  <meta charset=\"utf-8\">\n  <script>\n    let envois = 0;\n\n    function afficher(texte) {\n      document.getElementById('message').textContent = texte;\n    }\n\n    const bouton = document.getElementById('valider');\n    bouton.addEventListener('click', function () {\n      envois = envois + 1;\n      const nom = document.getElementById('nom').value;\n      afficher('Merci, ' + nom + ' ! Envoi n° ' + envois);\n    });\n  </script>\n</head>\n<body>\n  <form onsubmit=\"return false\">\n    <input id=\"nom\" placeholder=\"Votre nom\">\n    <button id=\"valider\" type=\"button\">Valider</button>\n  </form>\n  <p id=\"message\"></p>\n</body>",
+    "evidence": [
+      "Console, au chargement : TypeError: Cannot read properties of null (reading 'addEventListener'), ligne 11.",
+      "Une fois la page chargee, document.getElementById('valider') tape dans la console renvoie bien le bouton.",
+      "afficher('test') tape dans la console apres le chargement affiche bien test dans le paragraphe.",
+      "Mettre le script dans un fichier externe charge avec <script src> depuis le <head> donne exactement la meme erreur."
+    ],
+    "suspects": [
+      {
+        "id": "A",
+        "label": "Au moment ou la ligne 10 s'execute, le bouton n'existe pas encore dans la page"
+      },
+      {
+        "id": "B",
+        "label": "Un bouton avec type=\"button\" dans un <form> ne recoit pas les evenements click"
+      },
+      {
+        "id": "C",
+        "label": "bouton est declare avec const, donc addEventListener ne peut pas lui attacher de fonction"
+      }
+    ],
+    "correct_suspect_id": "A",
+    "hints": [
+      "L'erreur arrive au chargement, avant tout clic. Le clic n'est donc jamais ecoute : cherche ce qui a echoue avant, pas pendant.",
+      "Un navigateur lit la page de haut en bas et execute chaque script quand il le rencontre. Ce qui est ecrit plus bas n'existe pas encore a ce moment-la.",
+      "Ligne 10 : getElementById('valider') est appele depuis le <head>, alors que le bouton est defini dans le <body>, plus bas. Il renvoie null, et la ligne 11 plante."
+    ],
+    "fixes": [
+      {
+        "id": "F1",
+        "label": "Deplacer le <script> juste avant </body>",
+        "correct": true
+      },
+      {
+        "id": "F2",
+        "label": "Remplacer type=\"button\" par type=\"submit\"",
+        "correct": false
+      },
+      {
+        "id": "F3",
+        "label": "Remplacer const bouton par var bouton",
+        "correct": false
+      },
+      {
+        "id": "F4",
+        "label": "Remplacer addEventListener par onclick",
+        "correct": false
+      }
+    ],
+    "lesson": "Un script s'execute a l'endroit ou il se trouve dans la page. S'il cherche un element ecrit plus bas, cet element n'existe pas encore et getElementById renvoie null. Trois solutions : placer le script en fin de body, le charger avec l'attribut defer, ou attendre l'evenement DOMContentLoaded."
+  },
+  {
+    "slug": "js-total-mysterieux",
+    "title": "Le total mystérieux",
+    "language": "javascript",
+    "difficulty": "discovery",
+    "concept": "string-number-conversion",
+    "incident": {
+      "expected": "Le total affiche 12.",
+      "observed": "Le total affiche 75."
+    },
+    "code": "const a = document.getElementById('prix1').value;\nconst b = document.getElementById('prix2').value;\n\nconst total = a + b;\nconst remise = a - b;\n\ndocument.getElementById('total').textContent = total;\ndocument.getElementById('remise').textContent = remise;\nconsole.log('total :', total);",
+    "evidence": [
+      "typeof a retourne string.",
+      "Aucune erreur n'apparait dans la console.",
+      "a - b retourne 2, alors que a + b retourne 75."
+    ],
+    "suspects": [
+      {
+        "id": "A",
+        "label": "L'operateur + concatene deux chaines au lieu d'additionner deux nombres"
+      },
+      {
+        "id": "B",
+        "label": "console.log modifie les valeurs avant de les afficher"
+      },
+      {
+        "id": "C",
+        "label": "La variable b est inaccessible au moment du calcul"
+      }
+    ],
+    "correct_suspect_id": "A",
+    "hints": [
+      "Observe le type de chaque valeur.",
+      "Le comportement de + depend des types.",
+      "Convertis les valeurs avant l'addition."
+    ],
+    "fixes": [
+      {
+        "id": "F1",
+        "label": "Number(a) + Number(b)",
+        "correct": true
+      },
+      {
+        "id": "F2",
+        "label": "a.toString() + b",
+        "correct": false
+      },
+      {
+        "id": "F3",
+        "label": "Inverser l'ordre : b + a",
+        "correct": false
+      }
+    ],
+    "lesson": "Les valeurs d'un formulaire sont toujours des chaines. Avec deux chaines, + fait une concatenation ('7' + '5' donne '75'). Il faut convertir avec Number() avant de calculer."
+  },
+  {
+    "slug": "sql-dossiers-fantomes",
+    "title": "Les dossiers fantômes",
+    "language": "sql",
+    "difficulty": "expert",
+    "concept": "null-comparison",
+    "incident": {
+      "expected": "Le tableau de bord liste les dossiers ouverts qui n'ont pas encore d'agent, les plus anciens en premier.",
+      "observed": "La liste est vide. Aucune erreur : la requete s'execute en quelques millisecondes et renvoie zero ligne."
+    },
+    "code": "-- dossiers en attente d'affectation, pour le tableau de bord :\n-- ouverts, pas encore attribues a un agent, recents,\n-- les plus anciens d'abord\nSELECT d.id,\n       d.titre,\n       d.cree_le,\n       s.libelle AS statut\nFROM dossiers d\nJOIN statuts s ON s.id = d.statut_id\nWHERE s.code = 'ouvert'\n  AND d.archive = 0\n  AND d.agent_id = NULL\n  AND d.cree_le >= date('now', '-90 days')\nORDER BY d.cree_le ASC\nLIMIT 50;",
+    "evidence": [
+      "Sans la condition sur agent_id, la requete renvoie 14 lignes. Pour 5 d'entre elles, la colonne agent_id s'affiche vide.",
+      "La condition d.archive = 0, ecrite de la meme facon, fonctionne : elle garde bien les 14 lignes.",
+      "Dans le schema, agent_id est declaree INTEGER sans valeur par defaut, et n'est pas renseignee a la creation d'un dossier.",
+      "La meme requete avec agent_id <> NULL a la place renvoie aussi zero ligne."
+    ],
+    "suspects": [
+      {
+        "id": "A",
+        "label": "Le JOIN sur statuts ecarte les dossiers dont statut_id ne correspond a aucune ligne de la table statuts"
+      },
+      {
+        "id": "B",
+        "label": "La condition sur agent_id ne peut jamais etre vraie a cause de la facon dont elle est ecrite"
+      },
+      {
+        "id": "C",
+        "label": "date('now', '-90 days') renvoie un format que la colonne cree_le ne sait pas comparer"
+      }
+    ],
+    "correct_suspect_id": "B",
+    "hints": [
+      "Quatre conditions dans le WHERE. Retire-les une par une : une seule fait tout disparaitre, et ce n'est pas celle sur les dates.",
+      "Une colonne jamais renseignee ne contient ni 0 ni une chaine vide. Elle contient NULL, et NULL ne se compare pas comme une valeur.",
+      "Ligne 12. Avec = ou <>, une comparaison a NULL ne repond ni vrai ni faux : SQL a un autre mot-cle pour tester l'absence de valeur."
+    ],
+    "fixes": [
+      {
+        "id": "F1",
+        "label": "Ecrire d.agent_id IS NULL a la place de d.agent_id = NULL",
+        "correct": true
+      },
+      {
+        "id": "F2",
+        "label": "Ecrire d.agent_id = 0 a la place de d.agent_id = NULL",
+        "correct": false
+      },
+      {
+        "id": "F3",
+        "label": "Remplacer le JOIN par un LEFT JOIN",
+        "correct": false
+      },
+      {
+        "id": "F4",
+        "label": "Retirer la condition sur cree_le",
+        "correct": false
+      }
+    ],
+    "lesson": "En SQL, NULL n'est pas une valeur : aucune comparaison avec = ou <> n'est vraie, meme NULL = NULL. Pour tester l'absence de valeur on ecrit IS NULL ou IS NOT NULL. Le piege est silencieux : la requete est valide, elle renvoie juste zero ligne sans rien signaler."
+  },
+  {
+    "slug": "sql-compteur-impossible",
+    "title": "Le compteur impossible",
+    "language": "sql",
+    "difficulty": "investigation",
+    "concept": "group-by-aggregate",
+    "incident": {
+      "expected": "La requete affiche le nombre de dossiers de chaque agent.",
+      "observed": "La requete affiche une seule ligne : un seul agent avec 20 dossiers, le total de toute la table."
+    },
+    "code": "-- nombre de dossiers traites par chaque agent,\n-- pour la page de progression\n\nSELECT agent,\n       COUNT(*) AS nb_dossiers\nFROM dossiers\nORDER BY nb_dossiers DESC\nLIMIT 10;",
+    "evidence": [
+      "SELECT COUNT(*) FROM dossiers retourne 20.",
+      "SELECT DISTINCT agent FROM dossiers retourne 4 agents differents.",
+      "La meme requete avec GROUP BY agent retourne bien 4 lignes."
+    ],
+    "suspects": [
+      {
+        "id": "A",
+        "label": "COUNT(*) compte aussi les lignes des autres agents parce qu'il manque le regroupement GROUP BY agent"
+      },
+      {
+        "id": "B",
+        "label": "Il faudrait COUNT(agent) au lieu de COUNT(*)"
+      },
+      {
+        "id": "C",
+        "label": "Il manque un ORDER BY, donc les agents sont melanges dans une seule ligne"
+      }
+    ],
+    "correct_suspect_id": "A",
+    "hints": [
+      "Compare le 20 du resultat avec la preuve 1. Que compte vraiment la requete ?",
+      "Un agregat comme COUNT travaille par groupe de lignes. Sans regroupement, toute la table forme un seul groupe.",
+      "Regarde la preuve 3 : quel mot-cle manque a la requete d'origine ?"
+    ],
+    "fixes": [
+      {
+        "id": "F1",
+        "label": "Ajouter GROUP BY agent a la fin de la requete",
+        "correct": true
+      },
+      {
+        "id": "F2",
+        "label": "Remplacer COUNT(*) par COUNT(agent)",
+        "correct": false
+      },
+      {
+        "id": "F3",
+        "label": "Ajouter ORDER BY agent",
+        "correct": false
+      }
+    ],
+    "lesson": "Sans GROUP BY, un agregat comme COUNT ou SUM s'applique a toute la table, qui forme un seul groupe. Pour un resultat par agent, il faut regrouper avec GROUP BY agent."
+  }
+]
